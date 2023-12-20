@@ -1,90 +1,58 @@
+def visible_area(mountains: list[dict[str, int]]) -> float:
+    RIGHT = 'right'
+    LEFT = 'left'
+    HEIGHT = 'height'
 
-import random
+    unique_mountains = {}
+    mnt_1 = {LEFT: 0, RIGHT: 0, HEIGHT: 0}
+    visible_area = 0
+    """
 
-mountains = [
-    {'left': 9, 'right': 15, 'height': 3},
-    {'left': 8, 'right': 14, 'height': 3},
-    {'left': 5, 'right':  9, 'height': 2},
-    {'left': 0, 'right':  6, 'height': 3},
-    {'left': 2, 'right': 12, 'height': 5},
-    {'left': 5, 'right': 13, 'height': 4},
-]
-
-mountains = [
-    {'left': 9, 'right': 15, 'height': 3},
-    {'left': 8, 'right': 14, 'height': 3},
-    {'left': 0, 'right':  6, 'height': 3},
-]
-
-
-def visible_area(mountains: list) -> float:
-
-    def mnt_out(mnt_1: dict, mnt_2: dict):
-        if mnt_1["right"] - mnt_2["left"] >= 2 * mnt_2["height"]:
+    """
+    # POZAMIENIAC NAZWY ZMIENNYCH NA BARDZIEJ ZROZUMIALE
+    # nazwa funkcji czynnosc lub czasownik
+    def mnt_out(mountain_1: dict[str, int], mnt_2: dict[str, int]) -> bool:
+        """
+        """
+        if mountain_1[RIGHT] - mnt_2[LEFT] >= 2 * mnt_2[HEIGHT]:
+            # mountain(zrozumiale nazwy)
             return False
         else:
             return True
 
-    def area(mountain: dict) -> float:
-        return mountain["height"] * mountain["height"]
+    def area(mountain: dict[str, int]) -> float:
+        """
+        """
+        return mountain[HEIGHT] * mountain[HEIGHT]
 
-    def intersection_area(mnt_1: dict, mnt_2: dict) -> float:
-        a = mnt_1["right"] - mnt_2["left"]
+    def intersection_area(mnt_1: dict[str, int], mnt_2: dict[str, int]) -> float:
+        """
+        """
+        a = mnt_1[RIGHT] - mnt_2[LEFT]
         return a * a / 4
 
     sorted_mountains = sorted(
-        mountains, key=lambda x: (x['left'], -x['height']))
+        mountains, key=lambda x: (x[LEFT], -x[HEIGHT]))
 
-    unique_mountains = {}
+    # sortowanie do funkcji
     for mnt_2 in sorted_mountains:
-        left = mnt_2['left']
-        if left not in unique_mountains or mnt_2['height'] > unique_mountains[left]['height']:
+        left = mnt_2[LEFT]
+        if left not in unique_mountains or mnt_2[HEIGHT] > unique_mountains[left][HEIGHT]:
             unique_mountains[left] = mnt_2
 
-    mnt_1 = {'left': 0, 'right': 0, 'height': 0}
-    visible_area = 0
-    mountains_preprocess = list(unique_mountains.values())
+    mountains_preprocessed = list(unique_mountains.values())
 
-    for mnt_2 in mountains_preprocess:
-        if mnt_2["left"] >= mnt_1["right"]:
+    # tez do funkcji
+    for mnt_2 in mountains_preprocessed:
+        if mnt_2["left"] >= mnt_1[RIGHT]:
             visible_area += area(mnt_1)
             mnt_1 = mnt_2
         elif mnt_out(mnt_1, mnt_2):
             visible_area += area(mnt_1) - intersection_area(mnt_1, mnt_2)
             mnt_1 = mnt_2
-        else:
-            pass
 
-    last_area = area(mountains_preprocess[-1])
-    visible_area += last_area
+# tez do osobnej funkcji
+    if len(mountains_preprocessed) != 0:
+        visible_area += area(mountains_preprocessed[-1])
+
     return visible_area
-
-
-
-def generate_mountains(n):
-    """
-    Generates a list of n mountains with random properties, 
-    ensuring that right - left = 2 * height (45° slope).
-    """
-    mountains = []
-
-    for _ in range(n):
-        # Randomly select a height
-        height = random.randint(1, 50000)
-
-        # Ensure right - left = 2 * height
-        left = random.randint(0, 100000 - 2 * height)
-        right = left + 2 * height
-
-        mountains.append({'left': left, 'right': right, 'height': height})
-
-    return mountains
-
-test_1 = generate_mountains(1000)
-
-# result = visible_area(mountains)
-# print(result)
-
-test_result = visible_area(test_1)
-
-print(test_result)
