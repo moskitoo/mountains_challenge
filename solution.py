@@ -1,69 +1,134 @@
 def visible_area(mountains: list[dict[str, int]]) -> float:
+    """
+    Calculate the total visible area of a set of mountains.
+
+    Each mountain is represented as a dictionary with keys 'left', 'right', and 'height',
+    indicating the horizontal position and height of the mountain.
+
+    Args:
+        mountains (list[dict[str, int]]): A list of mountains, each represented as a dictionary.
+
+    Returns:
+        float: The total visible area of the mountains.
+
+    Note:
+        - Overlapping mountains will have their visible area calculated accordingly.
+    """
+
     RIGHT = 'right'
     LEFT = 'left'
     HEIGHT = 'height'
 
-    unique_mountains = {}
-    mnt_1 = {LEFT: 0, RIGHT: 0, HEIGHT: 0}
-    visible_area = 0
-    """
+    def is_mountain_not_fully_overlapped(mountain_to_compare: dict[str, int], current_mountain: dict[str, int]) -> bool:
+        """
+        Determine if a mountain should be considered for visible area calculation when compared to another mountain.
 
-    """
-    # POZAMIENIAC NAZWY ZMIENNYCH NA BARDZIEJ ZROZUMIALE
-    # nazwa funkcji czynnosc lub czasownik
-    def mnt_out(mountain_1: dict[str, int], mnt_2: dict[str, int]) -> bool:
+        Args:
+            mountain_to_compare (dict[str, int]): The next mountain to compare with.
+            current_mountain (dict[str, int]): The current mountain under consideration. 
+
+        Returns:
+            bool: True if mountain_2 overlaps significantly with mountain_1 and should be considered in the area calculation; False otherwise.
+
+        Explanation:
+            The function checks if the distance between the mountains is less than twice the height of the second mountain. 
+            If the peak of the second mountain is at or below the edge of the first mountain, then the area of the second mountain overlaps with or is encompassed by the area of the first mountain.
         """
-        opisac jak sprawdzane jest to czy robic pass czy nie
-        """
-        if mountain_1[RIGHT] - mnt_2[LEFT] >= 2 * mnt_2[HEIGHT]:
-            # mountain(zrozumiale nazwy)
+        if mountain_to_compare[RIGHT] - current_mountain[LEFT] >= 2 * current_mountain[HEIGHT]:
             return False
         else:
             return True
 
-    def area(mountain: dict[str, int]) -> float:
+    def calculate_area(mountain: dict[str, int]) -> float:
         """
+        Calculate the area of a mountain based on its height.
+
+        Args:
+            mountain (dict[str, int]): A mountain represented as a dictionary.
+
+        Returns:
+            float: The calculated area of the mountain.
         """
         return mountain[HEIGHT] * mountain[HEIGHT]
 
-    def intersection_area(mnt_1: dict[str, int], mnt_2: dict[str, int]) -> float:
+    def calculate_intersection_area(left_mountain: dict[str, int], right_mountain: dict[str, int]) -> float:
         """
+        Calculate the intersection area between two mountains.
+
+        Args:
+            left_mountain (dict[str, int]): Mountain on the left.
+            right_mountain (dict[str, int]): Mountain on the right.
+
+        Returns:
+            float: The area of overlap between the two mountains.
+
+        Note:
+            This function assumes that the mountains are overlapping.
         """
-        # zamienic a na cos co wskazuje ze to jest podstawa
-        a = mnt_1[RIGHT] - mnt_2[LEFT]
-        return a * a / 4
+        mountain_base_width = left_mountain[RIGHT] - right_mountain[LEFT]
+        return mountain_base_width * mountain_base_width / 4
+
+    def get_unique_mountains(sorted_mountains: list[dict[str, int]]) -> list[dict[str, int]]:
+        """
+        Preprocess the mountains list to ensure only the highest mountain at each x position 
+        of their bottom-left corner is retained.
+
+        Args:
+            sorted_mountains (list[dict[str, int]]): A mountain list sorted in ascending order 
+            of the x position of their bottom-left corner and descending order of height values.
+
+        Returns:
+            list[dict[str, int]]: A processed list of mountains, with only the highest mountain 
+            retained for each unique x position of their bottom-left corner.
+
+        Explanation:
+            The function ensures that for each x position of the bottom-left corner, only the highest mountain is considered for the visible area calculation. 
+            This is because the area of any smaller mountain at the same x position is overshadowed by or included within the area of the higher mountain.
+        """
+
+        unique_mountains = {}
+
+        for mountain in sorted_mountains:
+            left_value = mountain[LEFT]
+            if left_value not in unique_mountains or mountain[HEIGHT] > unique_mountains[left_value][HEIGHT]:
+                unique_mountains[left_value] = mountain
+
+        return list(unique_mountains.values())
+
+    def calculate_visible_area(unique_mountains: list[dict[str, int]]) -> float:
+        """
+        Calculate visible area of mountains in a given landscape.
+
+        Args:
+            unique_mountains (list[dict[str, int]]): A list of mountains, each represented as a dictionary,
+        with only the highest mountain retained for each unique x position of their bottom-left corner.  
+
+        Returns:
+            float: The total visible area of the mountains in the list.
+
+        Explanation:
+            The function iterates through the list of unique mountains, starting from the mountain with the lowest x-axis value.
+            For each mountain, it checks if there is an overlap with the previously considered mountain ('mountain_to_compare').
+            If there is no overlap, the entire area of 'mountain_to_compare' is added to the visible area. 
+            If there is an overlap, the function calculates and adds the visible portion of 'mountain_to_compare' to the total area.
+            After each comparison, 'mountain_to_compare' is updated to the current mountain for subsequent comparisons.
+        """
+        visible_area = 0
+        mountain_to_compare = {LEFT: 0, RIGHT: 0, HEIGHT: 0}
+
+        for current_mountain in unique_mountains:
+            if current_mountain[LEFT] >= mountain_to_compare[RIGHT]:
+                visible_area += calculate_area(mountain_to_compare)
+                mountain_to_compare = current_mountain
+            elif is_mountain_not_fully_overlapped(mountain_to_compare, current_mountain):
+                visible_area += calculate_area(mountain_to_compare) - calculate_intersection_area(mountain_to_compare, current_mountain)
+                mountain_to_compare = current_mountain
+
+        visible_area += calculate_area(mountain_to_compare)
+        return visible_area
 
     sorted_mountains = sorted(mountains, key=lambda x: (x[LEFT], -x[HEIGHT]))
 
-    # SPRAWDZIC CZY SORTOWANIA NIE DA SIE ZROBIC LEPIEJ
+    unique_mountains = get_unique_mountains(sorted_mountains)
 
-    # sortowanie do funkcji
-    for mnt_2 in sorted_mountains:
-        left = mnt_2[LEFT]
-        if left not in unique_mountains or mnt_2[HEIGHT] > unique_mountains[left][HEIGHT]:
-            unique_mountains[left] = mnt_2
-
-    mountains_preprocessed = list(unique_mountains.values())
-
-    # tez do funkcji
-    for mnt_2 in mountains_preprocessed:
-        if mnt_2["left"] >= mnt_1[RIGHT]:
-            visible_area += area(mnt_1)
-            mnt_1 = mnt_2
-        elif mnt_out(mnt_1, mnt_2):
-            visible_area += area(mnt_1) - intersection_area(mnt_1, mnt_2)
-            mnt_1 = mnt_2
-
-    visible_area += area(mnt_1)
-# tez do osobnej funkcji
-    # if len(mountains_preprocessed) != 0:
-    #     # to nie powinien byc ostatni element listy tylko ostatnia mnt_1 gora z ktora bylo porownywane wszystko
-    #     # ona byla przesuwana
-    #     # i to jej pola potrzebujemy a nie po prostu ostatniej gory z listy
-    #     # bo moze ta gora przesuwana zaslonila ostatnia gore z listy
-    #     # visible_area += area(mountains_preprocessed[-1])
-    #     visible_area += area(mnt_1)
-    #     # skoro mnt_1 jest inicjalizowane jako 0,0,0 to nie trzeba sprawdzac czy tablica jest pusta
-    #     # jezeli jest pousta to bedzie liczone pole gory 0,0,0
-
-    return visible_area
+    return calculate_visible_area(unique_mountains)

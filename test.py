@@ -1,5 +1,6 @@
 import unittest
 from solution import visible_area
+import random
 
 
 class TestVisibleArea(unittest.TestCase):
@@ -25,7 +26,37 @@ class TestVisibleArea(unittest.TestCase):
         mountains = []
         self.assertEqual(visible_area(mountains), 0)
 
-    # Additional test methods for other scenarios...
+    def test_boundary_conditions(self):
+        mountains = [{'left': 0, 'right': 100000, 'height': 50000}]
+        self.assertEqual(visible_area(mountains), 2500000000)
+    
+    def test_hidden_mountain(self):
+        mountains = [
+            {'left': 0, 'right': 6, 'height': 3},
+            {'left': 2, 'right': 4, 'height': 1}
+        ]
+        self.assertEqual(visible_area(mountains), 9)
+
+    def test_random_mountains_consistency(self):
+        random.seed(42)
+        mountains = []
+        for _ in range(10):
+            height = random.randint(1, 50000)
+            left = random.randint(0, 100000 - 2 * height)
+            right = left + 2 * height
+            mountains.append({'left': left, 'right': right, 'height': height})
+        area1 = visible_area(mountains)
+
+        random.seed(42)
+        mountains = []
+        for _ in range(10):
+            height = random.randint(1, 50000)
+            left = random.randint(0, 100000 - 2 * height)
+            right = left + 2 * height
+            mountains.append({'left': left, 'right': right, 'height': height})
+        area2 = visible_area(mountains)
+
+        self.assertEqual(area1, area2)
 
 
 if __name__ == '__main__':
