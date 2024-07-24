@@ -121,7 +121,8 @@ def visible_area(mountains: list[dict[str, int]]) -> float:
                 visible_area += calculate_area(mountain_to_compare)
                 mountain_to_compare = current_mountain
             elif is_mountain_not_fully_overlapped(mountain_to_compare, current_mountain):
-                visible_area += calculate_area(mountain_to_compare) - calculate_intersection_area(mountain_to_compare, current_mountain)
+                visible_area += calculate_area(mountain_to_compare) - calculate_intersection_area(
+                    mountain_to_compare, current_mountain)
                 mountain_to_compare = current_mountain
 
         visible_area += calculate_area(mountain_to_compare)

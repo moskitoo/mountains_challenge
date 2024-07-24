@@ -29,7 +29,7 @@ class TestVisibleArea(unittest.TestCase):
     def test_boundary_conditions(self):
         mountains = [{'left': 0, 'right': 100000, 'height': 50000}]
         self.assertEqual(visible_area(mountains), 2500000000)
-    
+
     def test_hidden_mountain(self):
         mountains = [
             {'left': 0, 'right': 6, 'height': 3},
